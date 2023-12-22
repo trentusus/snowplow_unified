@@ -1,0 +1,11 @@
+default:
+  outputs:
+    prod:
+      type: bigquery
+      method: service-account
+      project: com-snplow-sales-gcp
+      dataset: scratch # You can also use "schema" here
+      threads: 1
+      keyfile: "{{ env_var('SALES_GOOGLE_APPLICATION_CREDENTIALS') }}" 
+      location: europe-west2
+  target: prod
