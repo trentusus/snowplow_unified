@@ -1,11 +1,25 @@
-default:
+databricks:
   outputs:
     prod:
-      type: bigquery
-      method: service-account
-      project: com-snplow-sales-gcp
-      dataset: scratch # You can also use "schema" here
+      type: databricks
+      catalog: snowplow_samples
+      schema: lake_loader
+      host: dbc-dcab5385-51e3.cloud.databricks.com
+      http_path: /sql/1.0/warehouses/a67a0ac2d9efd255
+      token: "{{ env_var('DATABRICKS_DEMO_DATAMODELING_PASSWORD') }}"
+      threads: 1  # optional, default 1
+  target: prod
+snowflake:
+  outputs:
+    prod:
+      type: snowflake
+      account: yu83095.eu-west-1
+      user: SNOWPLOW_DBT_SALES_AWS_PROD1_USER
+      password: "{{ env_var('SNOWFLAKE_DATAMODELING_PASSWORD') }}"
+      role: SNOWPLOW_DBT_SALES_AWS_PROD1_ROLE
+      database: SNOWPLOW_SALES_AWS_PROD1_DB
+      warehouse: SNOWPLOW_DBT_SALES_AWS_PROD1_WH
+      schema: DBT_TRENT
       threads: 1
-      keyfile: "{{ env_var('SALES_GOOGLE_APPLICATION_CREDENTIALS') }}" 
-      location: europe-west2
+      client_session_keep_alive: true
   target: prod
