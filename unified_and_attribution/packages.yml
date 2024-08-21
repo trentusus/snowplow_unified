@@ -1,0 +1,5 @@
+packages: 
+ - package: snowplow/snowplow_unified
+   version: 0.4.5
+  - package: snowplow/snowplow_attribution
+    version: 0.3.0

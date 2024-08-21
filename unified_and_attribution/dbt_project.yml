@@ -1,0 +1,65 @@
+
+# Name your project! Project names should contain only lowercase characters
+# and underscores. A good package name should reflect your organization's
+# name or the intended use of these models
+name: 'my_new_project'
+version: '1.0.0'
+config-version: 2
+
+# This setting configures which "profile" dbt uses for this project.
+profile: 'databricks'
+
+# These configurations specify where dbt should look for different types of files.
+# The `source-paths` config, for example, states that models in this project can be
+# found in the "models/" directory. You probably won't need to change these!
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"  # directory which will store compiled SQL files
+clean-targets:         # directories to be removed by `dbt clean`
+  - "target"
+  - "dbt_packages"
+
+
+vars:
+  snowplow_unified:
+    # Configuration: https://docs.snowplow.io/docs/modeling-your-data/modeling-your-data-with-dbt/dbt-configuration/unified/
+    # snowplow__atomic_schema: rt_pipeline_prod1
+    snowplow__databricks_catalog: 'snowplow_samples'
+    snowplow__atomic_schema: 'lake_loader'
+    snowplow__database: '' # ignored for databricks
+    snowplow__events: 'events' 
+    snowplow__enable_ua: true
+    snowplow__enable_yauaa: true
+    snowplow__enable_iab: false
+    snowplow__derived_tstamp_partitioned: false
+    snowplow__min_visit_length: 10 # Default value
+    snowplow__heartbeat: 10 # Default value
+    snowplow__start_date: '2024-05-29'
+    snowplow__backfill_limit_days: 90
+    snowplow__app_id: ['website']
+    snowplow__enable_mobile: false
+    snowplow__enable_conversions: true
+    snowplow__conversion_events: [{name: test, condition: page_urlpath = '/', value: '1', default_value: 0, list_events: true}]
+  snowplow_attribution:
+    snowplow__conversion_path_source: "{{ ref('snowplow_unified_views') }}"
+    snowplow__conversions_source: "{{ ref('snowplow_unified_conversions') }}"
+    snowplow__user_mapping_source: "{{ ref('snowplow_unified_user_mapping') }}"
+
+
+# Configuring models
+# Full documentation: https://docs.getdbt.com/docs/configuring-models
+
+#models:
+#  snowplow_unified:
+#    # Put all tables into the same schema defined in environment dataset section in dbt
+#    +schema: null
+#
+#seeds:
+#  snowplow_unified:
+#    # Put all tables into the same schema defined in environment dataset section in dbt
+#    +schema: null
