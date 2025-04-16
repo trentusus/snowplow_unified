@@ -7,7 +7,11 @@ version: '1.0.0'
 config-version: 2
 
 # This setting configures which "profile" dbt uses for this project.
-profile: 'databricks'
+profile: 'default'
+
+dispatch:
+  - macro_namespace: dbt
+    search_order: ['snowplow_utils', 'dbt']
 
 # These configurations specify where dbt should look for different types of files.
 # The `source-paths` config, for example, states that models in this project can be
@@ -24,25 +28,52 @@ clean-targets:         # directories to be removed by `dbt clean`
   - "target"
   - "dbt_packages"
 
-
 vars:
   snowplow_unified:
     # Configuration: https://docs.snowplow.io/docs/modeling-your-data/modeling-your-data-with-dbt/dbt-configuration/unified/
-    # snowplow__atomic_schema: rt_pipeline_prod1
-    snowplow__databricks_catalog: 'snowplow_samples'
-    snowplow__atomic_schema: 'lake_loader'
-    snowplow__database: '' # ignored for databricks
-    snowplow__events: 'events' 
-    snowplow__enable_ua: true
+    snowplow__atomic_schema: aws_atomic_stream
+    snowplow__events: 'events'
+    snowplow__start_date: '2025-04-15'
     snowplow__enable_yauaa: true
     snowplow__enable_iab: false
-    snowplow__derived_tstamp_partitioned: false
-    snowplow__min_visit_length: 10 # Default value
-    snowplow__heartbeat: 10 # Default value
-    snowplow__start_date: '2024-05-29'
-    snowplow__backfill_limit_days: 90
-    snowplow__app_id: ['website']
+    snowplow__derived_tstamp_partitioned: true
+    snowplow__min_visit_length: 5 # Default is 10
+    snowplow__heartbeat: 15 # Default is 10
+    snowplow__backfill_limit_days: 30
+    snowplow__app_id: ['TrentDemo', 'NickDemo']
+    snowplow__session_timestamp: 'load_tstamp'
     snowplow__enable_mobile: false
+    snowplow__enable_web: true
+    snowplow__conversion_events: [
+      {
+        "name": "transaction", # Required, name of the conversion, string (must be valid SQL column name)
+        "condition": " event_name = 'snowplow_ecommerce_action' and unstruct_event_com_snowplowanalytics_snowplow_ecommerce_snowplow_ecommerce_action_1.type = 'transaction' ", # Required, valid SQL condition that returns true or false
+        "value": " 1 ", # Optional but recommended, can be field name or SQL
+        "default_value": "0", # Optional, can be field name or SQL
+        "list_events": "true" # Optional, boolean
+      }
+    ]
+  snowplow_attribution:
+    # Attribution Package configuration
+    snowplow__start_date: '2025-04-15' # Required, the start date for conversions to be processed from.
+    snowplow__attribution_list: ['first_touch', 'last_touch', 'linear', 'position_based'] # Optional, by default all are calculated
+    snowplow__conversion_path_source: "{{ ref('snowplow_unified_views') }}"
+    snowplow__conversions_source: "{{ ref('snowplow_unified_conversions') }}"
+    snowplow__user_mapping_source: "{{ ref('snowplow_unified_user_mapping') }}"
+  snowplow_ecommerce:
+    snowplow__app_id: ['TrentDemo', 'NickDemo']
+    snowplow__disable_ecommerce_carts: true
+    snowplow__disable_ecommerce_checkouts: true
+    snowplow__disable_ecommerce_page_context: true
+    snowplow__disable_ecommerce_transactions: true
+    snowplow__disable_ecommerce_user_context: true
+    snowplow__events_table: events
+    snowplow__atomic_schema: aws_atomic_stream
+    snowplow__derived_tstamp_partitioned: true
+    snowplow__session_timestamp: 'load_tstamp'
+    snowplow__start_date: '2025-04-15'
+
+
 
 
 # Configuring models
